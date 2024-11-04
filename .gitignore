@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Ignorer output produsert av prosjektet
+index.json
