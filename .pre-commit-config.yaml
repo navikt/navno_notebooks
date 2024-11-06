@@ -25,6 +25,8 @@ repos:
         additional_dependencies: [
           'httpx',
           'pydantic',
+          'pytest',
+          'pytest-asyncio',
           'rich',
           'yarl',
         ]
