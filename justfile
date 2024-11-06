@@ -6,3 +6,7 @@ fix:
 # Sjekk at alt ser bra ut med pre-commit
 lint:
     uv run pre-commit run --all-files --color always
+
+# Kjør tester med pytest
+test:
+    uv run pytest -rsX tests/
