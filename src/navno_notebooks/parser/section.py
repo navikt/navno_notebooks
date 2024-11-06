@@ -1,5 +1,6 @@
 """Parsere for 'no.nav:navno:section-*'."""
 
+import copy
 from typing import Any
 
 from langchain_core.documents import Document
@@ -51,15 +52,17 @@ def section_with_header(
             state += sub_section["config"]["html"]["processedHtml"]
         elif sub_type == "no.nav.navno:dynamic-header":
             if state:
-                results.append(Document(page_content=state, metadata=metadata.copy()))
-                state = ""
-            metadata["headers"].append(
-                (
-                    sub_section["config"]["title"],
-                    HEADER_MAPPING[sub_section["config"]["titleTag"]],
+                results.append(
+                    Document(page_content=state, metadata=copy.deepcopy(metadata))
                 )
-            )
+                state = ""
+            header = sub_section["config"]["title"]
+            header_level = HEADER_MAPPING[sub_section["config"]["titleTag"]]
+            # Hvis forrige header er samme nivå som den nye så erstatter vi
+            if metadata["headers"][-1][1] == header_level:
+                metadata["headers"].pop()
+            metadata["headers"].append((header, header_level))
             metadata["anchor"] = sub_section["config"]["anchorId"]
     if state:
-        results.append(Document(page_content=state, metadata=metadata.copy()))
+        results.append(Document(page_content=state, metadata=copy.deepcopy(metadata)))
     return results

@@ -1,5 +1,6 @@
 """Parsere for topnivå dokumenttyper."""
 
+import copy
 import datetime
 from typing import Any
 
@@ -35,7 +36,7 @@ def content_page(content: dict[str, Any]) -> list[Document]:
     for section in content["page"]["regions"]["pageContent"]["components"]:
         sec_type = section["descriptor"]
         if sec_type == "no.nav.navno:section-with-header":
-            docs.extend(section_with_header(section, metadata.copy()))
+            docs.extend(section_with_header(section, copy.deepcopy(metadata)))
         elif sec_type == "no.nav.navno:uxsignals-widget":
             pass  # Ignorer med vilje
         else:
