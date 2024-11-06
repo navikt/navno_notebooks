@@ -30,6 +30,7 @@ def _product_card(content: dict[str, Any]) -> Tag:
         data = content["config"][card]
         if page := data.get("targetPage"):
             return BeautifulSoup(
-                f"<a href=\"https://www.nav.no{page['_path']}\">{page['displayName']}</a>"
+                f"<a href=\"https://www.nav.no{page['_path']}\">{page['displayName']}</a>",
+                "lxml",
             ).a
     raise RuntimeError(f"Klarte ikke å lage lenke for product-card {content['ref']}")
