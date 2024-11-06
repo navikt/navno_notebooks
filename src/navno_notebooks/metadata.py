@@ -108,4 +108,3 @@ async def fetch_metadata(
             to_fetch.clear()
             if follow_redirect and redirects:
                 to_fetch.extend(redirects)
-    yield MetadataYield(metadata=result, could_not_reach=could_not_reach)
