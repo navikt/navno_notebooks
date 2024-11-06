@@ -5,6 +5,8 @@ from typing import Any
 
 from langchain_core.documents import Document
 
+from .html import parse_area
+
 HEADER_MAPPING = {
     "h1": "#",
     "h2": "##",
@@ -14,6 +16,11 @@ HEADER_MAPPING = {
     "h6": "######",
 }
 """Mapping fra HTML header type til Markdown header"""
+
+
+def join_content(state: list[str]) -> str:
+    """Slå sammen HTML seksjoner som hører sammen under en header."""
+    return "\n\n".join(state)
 
 
 def section_with_header(
@@ -43,19 +50,22 @@ def section_with_header(
     # Liste med resultater å returnere
     results = []
     # Iterer over potensielle barn
-    state = ""
+    state = []
     for sub_section in content["regions"]["content"]["components"]:
         if sub_section["type"] == "fragment":
             sub_section = sub_section["fragment"]
         sub_type = sub_section["descriptor"]
         if sub_type == "no.nav.navno:html-area":
-            state += sub_section["config"]["html"]["processedHtml"]
+            state.append(parse_area(sub_section))
         elif sub_type == "no.nav.navno:dynamic-header":
             if state:
                 results.append(
-                    Document(page_content=state, metadata=copy.deepcopy(metadata))
+                    Document(
+                        page_content=join_content(state),
+                        metadata=copy.deepcopy(metadata),
+                    )
                 )
-                state = ""
+                state.clear()
             header = sub_section["config"]["title"]
             header_level = HEADER_MAPPING[sub_section["config"]["titleTag"]]
             # Hvis forrige header er samme nivå som den nye så erstatter vi
@@ -64,5 +74,7 @@ def section_with_header(
             metadata["headers"].append((header, header_level))
             metadata["anchor"] = sub_section["config"]["anchorId"]
     if state:
-        results.append(Document(page_content=state, metadata=copy.deepcopy(metadata)))
+        results.append(
+            Document(page_content=join_content(state), metadata=copy.deepcopy(metadata))
+        )
     return results
