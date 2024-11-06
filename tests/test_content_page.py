@@ -1,5 +1,7 @@
 """Tester for parsing av sider med type 'no.nav.navno:content-page-with-sidemenus'."""
 
+import re
+
 import httpx
 import pytest
 
@@ -23,3 +25,6 @@ async def test_parse_content_page(path: str) -> None:
             doc.metadata["headers"], doc.metadata["headers"][1:]
         ):
             assert first_h[1] != second_h[1], "To like headere skal ikke forekomme"
+        assert not re.search(
+            r"editor-macro", doc.page_content
+        ), "Det skal ikke eksistere macro etter parsing"
