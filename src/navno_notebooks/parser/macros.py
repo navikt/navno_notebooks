@@ -1,11 +1,12 @@
 """Parsing av macro fra JSON."""
 
+import re
 from typing import Any
 
 from bs4 import BeautifulSoup, Tag
 
 
-def parse_macros(content: list[dict[str, Any]]) -> dict[str, Tag]:
+def parse_macros(content: list[dict[str, Any]]) -> dict[str, Tag | str]:
     """Tolk macro strukturen og gi tilbake en mapping over verdier.
 
     Args:
@@ -19,8 +20,12 @@ def parse_macros(content: list[dict[str, Any]]) -> dict[str, Tag]:
         ref = macro["ref"]
         if name == "product-card-mini":
             result[ref] = _product_card(macro)
+        elif name == "global-value-with-math":
+            result[ref] = _global_value_math(macro)
+        elif name == "video":
+            pass  # Ignore med vilje
         else:
-            raise NotImplementedError(f"Støtter ikke macro: {name}")
+            raise NotImplementedError(f"Støtter ikke macro: {name} ({ref})")
     return result
 
 
@@ -34,3 +39,15 @@ def _product_card(content: dict[str, Any]) -> Tag:
                 "lxml",
             ).a
     raise RuntimeError(f"Klarte ikke å lage lenke for product-card {content['ref']}")
+
+
+def _global_value_math(content: dict[str, Any]) -> str:
+    """Tolk 'global-value-with-math' macro."""
+    for math in content["config"]:
+        data = content["config"][math]
+        if expr := data.get("expression"):
+            full_expr = re.sub(
+                r"\$(\d)+", lambda m: str(data["variables"][int(m.group(1)) - 1]), expr
+            )
+            return str(eval(full_expr))
+    raise RuntimeError(f"Fant ikke matte uttrykk i {content['ref']}")
