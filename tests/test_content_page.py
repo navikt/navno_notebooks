@@ -18,3 +18,8 @@ async def test_parse_content_page(path: str) -> None:
         )
     docs = content_page(json["pageProps"]["content"])
     assert docs, "Forventet at vi fikk ut minst ett dokument fra parsing"
+    for doc in docs:
+        for first_h, second_h in zip(
+            doc.metadata["headers"], doc.metadata["headers"][1:]
+        ):
+            assert first_h[1] != second_h[1], "To like headere skal ikke forekomme"
